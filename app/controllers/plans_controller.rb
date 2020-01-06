@@ -10,6 +10,17 @@ class PlansController < ApplicationController
     end
   end
 
+  def show
+    @plan = Plan.find(params[:id])
+    respond_to do |format|
+      format.html
+      format.json do
+        @lists = @plan.lists
+        render json: { status: 0, msg: 'ok', data: { plan: @plan.as_json(only: [:id, :title, :description]), lists: @lists.as_json(only: [:id, :title]) } }
+      end
+    end
+  end
+
   def create
     plan = Plan.new(plan_params)
     if plan.save
