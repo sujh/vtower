@@ -28,12 +28,13 @@ ActiveRecord::Schema.define(version: 2020_01_02_034657) do
   end
 
   create_table "tasks", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
-    t.string "title", null: false
-    t.string "content", null: false
+    t.string "title", limit: 50, null: false
+    t.string "content", limit: 2000, null: false
+    t.integer "status", limit: 1, default: 0, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "plan_id"
-    t.index ["plan_id"], name: "index_tasks_on_plan_id"
+    t.bigint "list_id"
+    t.index ["list_id"], name: "index_tasks_on_list_id"
   end
 
 end

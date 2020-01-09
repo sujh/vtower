@@ -1,5 +1,5 @@
 import Vue from 'vue/dist/vue.esm';
-import Plan from '../plan/index';
+import Plan from '../plan';
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
