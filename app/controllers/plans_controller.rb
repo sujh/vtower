@@ -15,7 +15,7 @@ class PlansController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        @lists = @plan.lists
+        @lists = @plan.lists.includes(:tasks)
         render json: { status: 0, msg: 'ok', data: {
             plan: @plan.as_json(only: [:id, :title, :description]),
             lists: @lists.as_json(only: [:id, :title], include: { tasks: { only: [:id, :title, :content, :status] }}) } }
