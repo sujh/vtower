@@ -26,7 +26,7 @@ class PlansController < ApplicationController
   def create
     plan = Plan.new(plan_params)
     if plan.save
-      render json: { status: 0, msg: 'ok' }
+      render json: { status: 0, msg: 'ok', data: { id: plan.id } }
     else
       render json: { status: -1, msg: plan.error_msg }
     end
