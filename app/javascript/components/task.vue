@@ -1,14 +1,17 @@
 <template>
   <div>
-    <div v-if="newTask.show" class="newTask">
-      <input type="text" placeholder="标题" v-model="newTask.title">
-      <br>
-      <input type="text" placeholder="内容" v-model="newTask.content">
-      <br>
-      <button @click="createTask">提交</button>
-      <button @click="newTask.show=false">取消</button>
-    </div>
-    <br>
+    <el-form v-if="newTask.show" class="newTask">
+      <el-form-item>
+        <el-input placeholder="标题" v-model="newTask.title"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-input placeholder="内容" v-model="newTask.content" type="textarea"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button @click="createTask">提交</el-button>
+        <el-button @click="newTask.show = false">取消</el-button>
+      </el-form-item>
+    </el-form>
     <div>
       <div v-for="t in tasks" class="taskItem">
         <span v-if="!t.editShow">
@@ -17,20 +20,26 @@
           </del>
           <template v-else>{{t.title}}</template>
         </span>
-        <div class="editTaskField" v-if="t.editShow">
-          <input type="text" :value="t.title" name="title">
-          <br>
-          <input type="text" :value="t.content" name="content">
-          <br>
-          <button @click="updateTask(t, $event)">确定</button>
-          <button @click="toggleEditField(t)">取消</button>
+        <el-form class="editTaskField" v-if="t.editShow">
+          <el-form-item>
+            <el-input placeholder="标题" v-model="t.title"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-input placeholder="内容" v-model="t.content"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="updateTask(t)">提交</el-button>
+            <el-button @click="cancelTask(t)">取消</el-button>
+          </el-form-item>
+        </el-form>
+        <div class="taskOptField">
+          <el-button-group >
+            <el-button icon="el-icon-edit" @click="toggleEditField(t)" title="编辑" ></el-button>
+            <el-button icon="el-icon-delete" @click="delTask(t)" title="删除"></el-button>
+            <el-button @click="changeTaskStatus(t, 'closed')" title="关闭">关闭</el-button>
+            <el-button @click="changeTaskStatus(t, 'opened')" title="打开">打开</el-button>
+          </el-button-group>
         </div>
-        <span class="taskOptField">
-          <button @click="toggleEditField(t)">编辑</button>
-          <button @click="delTask(t)">删除</button>
-          <button v-if="t.status == 'opened'" @click="changeTaskStatus(t, 'closed')">关闭</button>
-          <button v-if="t.status == 'closed'" @click="changeTaskStatus(t, 'opened')">打开</button>
-        </span>
       </div>
     </div>
 
@@ -77,17 +86,14 @@
       toggleEditField(task){
         if(task.editShow === undefined){
           this.$set(task, 'editShow', true)
+          task.original = { title: task.title, content: task.content }
         } else {
           task.editShow = !task.editShow
         }
       },
-      updateTask(task, event){
-        let pele = event.target.closest('div')
-        let title = pele.querySelector('input[name=title]').value
-        let content = pele.querySelector('input[name=content]').value
-        $axios.patch(`/tasks/${task.id}`, {title, content}).then((resp) => {
+      updateTask(task){
+        $axios.patch(`/tasks/${task.id}`, {title: task.title, content: task.content}).then((resp) => {
           if(resp.data.status === 0){
-            Object.assign(task, {title, content})
             this.toggleEditField(task)
           } else {
             alert(resp.data.msg)
@@ -102,6 +108,10 @@
             alert(resp.data.msg)
           }
         })
+      },
+      cancelTask(task){
+        this.toggleEditField(task)
+        Object.assign(task, task.original)
       }
     }
   }
@@ -123,6 +133,9 @@
   }
   .taskItem:hover .taskOptField{
     display: inline
+  }
+  .taskItem{
+    margin: 10px 0;
   }
 
 </style>
