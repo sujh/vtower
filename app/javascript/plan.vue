@@ -5,9 +5,9 @@
         <div style="position: relative" class="plan-show">
           <a :href="`/plans/${p.id}`" v-show="!p.editShow">
             <el-card>
-              {{p.title}}
-              <br>
-              <br>
+              <div slot="header">
+                {{p.title}}
+              </div>
               {{p.description}}
             </el-card>
           </a>
@@ -22,15 +22,14 @@
         <el-card class="edit-field" v-show="p.editShow" :data-id="p.id">
           <el-form>
             <el-form-item>
-              <el-input type="text" placeholder="名称" :value="p.title"></el-input>
+              <el-input type="text" placeholder="名称" v-model="p.title"></el-input>
             </el-form-item>
             <el-form-item>
-              <el-input type="text" placeholder="描述" :value="p.description"></el-input>
+              <el-input type="textarea" placeholder="描述" v-model="p.description"></el-input>
             </el-form-item>
             <el-form-item>
               <el-button @click="updatePlan(p)">提交</el-button>
-              <el-button @click="toggleEditPlan(p)">取消</el-button>
-              <span>{{p.error_msg}}</span>
+              <el-button @click="cancelEditPlan(p)">取消</el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -51,7 +50,6 @@
           <el-form-item>
             <el-button @click="createPlan">提交</el-button>
             <el-button @click="toggleNewPlan">取消</el-button>
-            <span>{{plan.error_msg}}</span>
           </el-form-item>
         </el-form>
       </el-card>
@@ -67,13 +65,14 @@
           show: false,
           title: '',
           description: '',
-          error_msg: null,
         },
         plans: [],
       }
     },
     beforeCreate(){
-      $axios.get('/plans.json').then((resp) => this.plans = resp.data.data.plans)
+      $axios.get('/plans.json').then((resp) => this.plans = resp.data.data.plans).then(()=>{
+        this.plans.forEach((plan) => Object.assign(plan, {original: {title: plan.title, description: plan.description}}))
+      })
     },
 
     methods: {
@@ -82,37 +81,41 @@
       },
       createPlan(){
         if (this.plan.title === '') {
-          this.plan.error_msg = '名称不能为空'
+          alert('名称不能为空')
         } else if (this.plan.description === '') {
-          this.plan.error_msg = '描述不能为空'
+          alert('描述不能为空')
         } else {
           $axios.post('/plans', { title: this.plan.title, description: this.plan.description })
             .then((resp) => {
               if (resp.data.status === 0) {
-                this.plans.push({ title: this.plan.title, description: this.plan.description, id: resp.data.data.id })
-                Object.assign(this.plan, { error_msg: '提交成功', show: false })
+                this.plans.push({
+                  title: this.plan.title,
+                  description: this.plan.description,
+                  original: { title: this.plan.title, description: this.plan.description },
+                  id: resp.data.data.id
+                })
+                Object.assign(this.plan, { show: false })
               } else {
-                this.plan.error_msg = resp.data.msg
+                alert(resp.data.msg)
               }
             })
         }
       },
       updatePlan(plan){
-        let ele = document.querySelector(`[data-id="${plan.id}"]`)
-        let title = ele.children[0].value
-        let description = ele.children[1].value
+        let title = plan.title
+        let description = plan.description
         if (title === '') {
-          this.$set(plan, 'error_msg', '名称不能为空')
+          alert('名称不能为空')
         } else if(description === '') {
-          this.$set(plan, 'error_msg', '描述不能为空')
+          alert('描述不能为空')
         } else {
           $axios.patch(`/plans/${plan.id}`, {title: title, description: description})
             .then((resp) => {
               if(resp.data.status === 0) {
-                Object.assign(plan, { title: title, description: description, error_msg: '提交成功' })
+                Object.assign(plan, { title, description, original: { title, description } })
                 this.toggleEditPlan(plan)
               } else {
-                this.$set(plan, 'error_msg', resp.data.msg)
+                alert(resp.data.msg)
               }
             })
         }
@@ -124,10 +127,14 @@
               if (resp.data.status === 0) {
                 this.plans.splice(this.plans.indexOf(plan), 1)
               } else {
-                this.$set(plan, 'error_msg', resp.data.msg)
+                alert(resp.data.msg)
               }
             })
         }
+      },
+      cancelEditPlan(plan){
+        Object.assign(plan, plan.original)
+        this.toggleEditPlan(plan)
       },
       toggleEditPlan(plan){
         if(plan.editShow){
