@@ -70,9 +70,7 @@
       }
     },
     beforeCreate(){
-      $axios.get('/plans.json').then((resp) => this.plans = resp.data.data.plans).then(()=>{
-        this.plans.forEach((plan) => Object.assign(plan, {original: {title: plan.title, description: plan.description}}))
-      })
+      $axios.get('/plans.json').then((resp) => this.plans = resp.data.data.plans)
     },
 
     methods: {
@@ -91,7 +89,6 @@
                 this.plans.push({
                   title: this.plan.title,
                   description: this.plan.description,
-                  original: { title: this.plan.title, description: this.plan.description },
                   id: resp.data.data.id
                 })
                 Object.assign(this.plan, { show: false })
@@ -112,7 +109,7 @@
           $axios.patch(`/plans/${plan.id}`, {title: title, description: description})
             .then((resp) => {
               if(resp.data.status === 0) {
-                Object.assign(plan, { title, description, original: { title, description } })
+                Object.assign(plan.original, { title, description })
                 this.toggleEditPlan(plan)
               } else {
                 alert(resp.data.msg)
@@ -141,6 +138,7 @@
           plan.editShow = false
         } else {
           this.$set(plan, 'editShow', true)
+          plan.original = {title: plan.title, description: plan.description}
         }
       },
     }

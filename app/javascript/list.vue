@@ -69,8 +69,6 @@
       $axios.get(window.location.href + '.json').then((resp) => {
         Object.assign(this.plan, resp.data.data.plan)
         this.lists.push(...resp.data.data.lists)
-      }).then(() => {
-        this.lists.forEach((list) => { list.original = {title: list.title}})
       })
     },
     methods: {
@@ -89,6 +87,7 @@
           this.$set(list, 'editShow', false)
         } else {
           this.$set(list, 'editShow', true)
+          list.original = { title: list.title }
         }
       },
       updateList(list){
