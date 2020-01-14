@@ -1,33 +1,45 @@
 <template>
   <div>
-    <h2 style="display: inline-block">{{plan.title}}</h2>
+    <h2 style="display: inline-block; margin: 20px">{{plan.title}}</h2>
     <span>{{plan.description}}</span>
 
     <div class="flex-container">
-      <div v-for="list, idx in lists" class="list-item">
-        <div v-show="!list.editShow" class="list-title">
+      <el-card v-for="list, idx in lists" class="list-item">
+        <div slot="header" v-show="!list.editShow" class="list-title">
           <span>{{list.title}}</span>
           <span class="list-opt-field">
-            <button @click="toggle(list)">编辑</button>
-            <button @click="deleteList(list)">删除</button>
-            <button @click="$refs.task[idx].newTask.show=true">添加任务</button>
+            <el-button-group>
+              <el-button icon="el-icon-edit" @click="toggle(list)" title="编辑" ></el-button>
+              <el-button icon="el-icon-delete" @click="deleteList(list)" title="删除"></el-button>
+              <el-button icon="el-icon-plus" @click="$refs.task[idx].newTask.show=true" title="添加任务"></el-button>
+            </el-button-group>
           </span>
         </div>
-        <div v-show="list.editShow" class="edit-field">
-          <input type="text" :value="list.title">
-          <button @click="updateList(list, $event)">确定</button>
-          <button @click="toggle(list)">取消</button>
+        <div slot="header" v-show="list.editShow" class="edit-field">
+          <el-form :inline="true">
+            <el-form-item>
+              <el-input placeholder="任务组名称" v-model="list.title"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button @click="updateList(list)">提交</el-button>
+              <el-button @click="cancelEdit(list)">取消</el-button>
+            </el-form-item>
+          </el-form>
         </div>
         <task ref="task" :list_id="list.id" :tasks="list.tasks"></task>
-      </div>
+      </el-card>
 
-      <div class="list-item">
-        <a v-if="!newList.show" @click="newList.show = true" href="javascript:;">添加任务组</a>
-        <div v-else>
-          <input type="text" placeholder="标题" v-model="newList.title">
-          <button @click="newList.show = false">取消</button>
-          <button @click="createList">提交</button>
-        </div>
+      <div class="list-item" style="width: 250px">
+        <el-button v-if="!newList.show" @click="newList.show = true" type="info" size="medium" plain>添加任务组</el-button>
+        <el-form v-else>
+          <el-form-item>
+            <el-input placeholder="任务组名称" v-model="newList.title"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="createList">提交</el-button>
+            <el-button @click="newList.show = false">取消</el-button>
+          </el-form-item>
+        </el-form>
       </div>
     </div>
   </div>
@@ -53,10 +65,12 @@
         lists: []
       }
     },
-    created: function(){
+    beforeCreate(){
       $axios.get(window.location.href + '.json').then((resp) => {
         Object.assign(this.plan, resp.data.data.plan)
         this.lists.push(...resp.data.data.lists)
+      }).then(() => {
+        this.lists.forEach((list) => { list.original = {title: list.title}})
       })
     },
     methods: {
@@ -77,16 +91,19 @@
           this.$set(list, 'editShow', true)
         }
       },
-      updateList(list, event){
-        let title = event.target.closest('.edit-field').querySelector('input').value
-        $axios.patch(`/lists/${list.id}`, { title }).then((resp) => {
+      updateList(list){
+        $axios.patch(`/lists/${list.id}`, { title: list.title }).then((resp) => {
           if (resp.data.status === 0) {
             this.toggle(list)
-            list.title = title
+            list.original.title = list.title
           } else {
             alert(resp.data.msg)
           }
         })
+      },
+      cancelEdit(list){
+        this.toggle(list)
+        list.title = list.original.title
       },
       deleteList(list){
         if(confirm(`确认删除${list.title}？`)){
@@ -105,13 +122,14 @@
     display: flex;
   }
   .list-item {
-    width: 300px;
+    width: 350px;
     margin: 10px 20px;
   }
   .list-opt-field {
     display: none;
+    float: right
   }
-  .list-title:hover .list-opt-field {
+  .el-card__header:hover .list-opt-field {
     display: inline;
   }
 </style>
