@@ -8,4 +8,38 @@ html
     = javascript_pack_tag 'application', 'data-turbolinks-track': 'reload'
 
   body
+    header
+      .flash
+        - if flash[:notice]
+          p = "Notice: " + flash[:notice]
+        - if flash[:alert]
+          p = "Alert: " + flash[:alert]
+      .user
+        - if current_user
+          span = current_user.email
+          == button_to('退出', destroy_user_session_path, method: :delete, class: 'el-button el-button--default is-plain')
+        - else
+          p 未登录
     == yield
+
+css:
+  body {
+    margin: 0 !important
+  }
+  header {
+    height: 50px;
+    border-bottom: 2px solid;
+  }
+  .user {
+    padding-right: 10px;
+    display: inline-block;
+    float: right
+  }
+  .user form {
+    margin-left: 5px;
+    display: inline
+  }
+  .flash {
+    float: left;
+    margin-left: 10px;
+  }
