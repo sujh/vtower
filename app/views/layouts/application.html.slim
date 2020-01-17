@@ -13,7 +13,7 @@ html
         - if flash[:notice]
           p = "Notice: " + flash[:notice]
         - if flash[:alert]
-          p = "Alert: " + flash[:alert]
+          p.alert = "Alert: " + flash[:alert]
       .user
         - if current_user
           span = current_user.email
@@ -29,6 +29,7 @@ css:
   header {
     height: 50px;
     border-bottom: 2px solid;
+    overflow: hidden;
   }
   .user {
     padding-right: 10px;
@@ -42,4 +43,7 @@ css:
   .flash {
     float: left;
     margin-left: 10px;
+  }
+  p.alert{
+    color: orangered;
   }

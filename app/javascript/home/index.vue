@@ -55,6 +55,9 @@
         }
       }
     },
+    created(){
+      this.login_form = !window.location.href.match(/login_form=false/)
+    },
     mounted(){
       this.$nextTick(() =>{
         let token = document.querySelector('meta[name="csrf-token"]').content
