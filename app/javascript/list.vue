@@ -4,7 +4,7 @@
     <span>{{plan.description}}</span>
 
     <div class="flex-container">
-      <el-card v-for="list, idx in lists" class="list-item">
+      <el-card v-for="list, idx in lists" :key="idx" class="list-item">
         <div slot="header" v-show="!list.editShow" class="list-title">
           <span>{{list.title}}</span>
           <span class="list-opt-field">
