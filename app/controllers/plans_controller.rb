@@ -4,7 +4,7 @@ class PlansController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        plans = Plan.all
+        plans = Plan.accessible_by(current_ability)
         render json: { status: 0, msg: 'ok', data: { plans: plans.as_json(only: [:id, :title, :description]) }}
       end
     end
@@ -12,6 +12,7 @@ class PlansController < ApplicationController
 
   def show
     @plan = Plan.find(params[:id])
+    authorize! :read, @plan
     respond_to do |format|
       format.html
       format.json do
@@ -24,7 +25,8 @@ class PlansController < ApplicationController
   end
 
   def create
-    plan = Plan.new(plan_params)
+    authorize! :create, Plan
+    plan = current_user.plans.new(plan_params)
     if plan.save
       render json: { status: 0, msg: 'ok', data: { id: plan.id } }
     else
@@ -34,6 +36,7 @@ class PlansController < ApplicationController
 
   def update
     plan = Plan.find(params[:id])
+    authorize! :update, plan
     if plan.update(plan_params)
       render json: { status: 0, msg: 'ok' }
     else
@@ -43,6 +46,7 @@ class PlansController < ApplicationController
 
   def destroy
     plan = Plan.find(params[:id])
+    authorize! :destroy, plan
     plan.destroy
     render json: { status: 0, msg: 'ok' }
   end
